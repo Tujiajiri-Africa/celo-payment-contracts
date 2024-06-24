@@ -126,6 +126,8 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
     function withdrawEscrowBalance() external onlyRole(FUND_MANAGER_ROLE) nonReentrant(){
         uint256 balance = address(this.balance);
+        if(balance == 0) return INSUFFIENT_ESCROW_BALANCE();
+        
         payable(msg.sender).transfer(balance);
         emit WithdrawNative({
             beneficiary: msg.sender,
