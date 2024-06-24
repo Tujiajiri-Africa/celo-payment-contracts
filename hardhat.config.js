@@ -164,6 +164,22 @@ module.exports = {
           apiURL: "https://api-testnet.lineascan.build/api",
           browserURL: "https://goerli.lineascan.build/address"
         }
+      },
+      {
+        network: "alfajores",
+        chainId: 44787,
+        urls: {
+          apiURL: "https://alfajores.celoscan.io/api",
+          browserURL: "https://alfajores.celoscan.io/address"
+        }
+      },
+      {
+        network: "celo",
+        chainId: 42220,
+        urls: {
+          apiURL: "https://celoscan.io/api",
+          browserURL: "https://celoscan.io/address"
+        }
       }
     ],
   }
