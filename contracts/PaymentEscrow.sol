@@ -11,6 +11,9 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     bytes32 public constant FUND_MANAGER_ROLE = keccak256('FUND_MANAGER_ROLE');
 
     address private immutable cUSD = 0x765DE816845861e75A25fCA122bb6898B8B1282a;
+    address private immutable cEUR = 0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73;
+    address private immutable cREAL = 0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787;
+    address private immutable CELO = 0x471EcE3750Da237f93B8E339c536989b8978a438;
 
     error INVALID_RECIPIENT;
     error INVALID_ASSET_AMOUNT;
@@ -55,16 +58,16 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         });
     }
 
-    function executePayment(address _beneficiary, uint256 _amount) external onlyRole(FUND_MANAGER_ROLE) nonReentrant{
-        uint256 balance = IERC20(cUSD).balanceOf(address(this));
+    function executeERC20Payment(address _asset, address _beneficiary, uint256 _amount) external onlyRole(FUND_MANAGER_ROLE) nonReentrant{
+        uint256 balance = IERC20(_asset).balanceOf(address(this));
         if(balance < _amount) revert INSUFFIENT_ESCROW_BALANCE();
         if(_beneficiary == address(0)) revert INVALID_RECIPIENT();
 
-        IERC20(cUSD).safeTransfer(_beneficiary, _amount);
+        IERC20(_asset).safeTransfer(_beneficiary, _amount);
 
         emit OffRamp({
             recipient: _beneficiary,
-            asset: cUSD, 
+            asset: _asset, 
             amount: _amount,
             timestamp: block.timestamp
         });
