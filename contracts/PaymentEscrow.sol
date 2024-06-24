@@ -20,6 +20,11 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     }
 
     function getEscrowBalance() nonReentrant external{
-
+        return address(this).balance;
     }
+
+    
+    receive() external payable {}
+
+    fallback() external payable {}
 }
