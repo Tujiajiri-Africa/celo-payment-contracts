@@ -52,9 +52,8 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
     }
 
-    function getEscrowCUSDBalance() nonReentrant external{
-        uint256 _balance = IERC20(cUSD).balanceOf(address(this));
-        return _balance;
+    function getEscrowCUSDBalance() nonReentrant external return(uint256 balance){
+        balance = IERC20(cUSD).balanceOf(address(this));
     }
 
     receive() external payable {
