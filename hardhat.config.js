@@ -177,8 +177,8 @@ module.exports = {
         network: "celo",
         chainId: 42220,
         urls: {
-          apiURL: "api.celoscan.io",
-          browserURL: "https://celoscan.io/address"
+          apiURL: "https://explorer.celo.org/mainnet/api",
+          browserURL: "https://celoscan.io"
         }
       }
     ],
