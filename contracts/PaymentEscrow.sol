@@ -58,7 +58,7 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     event WithdrawNative(
         address indexed befeciary,
         uint256 indexed amount,
-        uint256 timestamp
+        uint256 indexed timestamp
     );
 
     constructor(){
@@ -136,16 +136,12 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         });
     }
 
-    function getcUSDPrice() external view returns(uint256){
-       // prettier-ignore
-        (
-            /* uint80 roundID */,
-            int answer,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
-            /*uint80 answeredInRound*/
-        ) = celocUSDMainnetPriceFeed.latestRoundData();
-        return answer;
+    function _getLatestBNBPriceInUSD() private view returns(uint256, uint256){
+        (, int256 price, , , ) = celocUSDMainnetPriceFeed.latestRoundData();
+        uint256 decimals = celocUSDMainnetPriceFeed.decimals();
+        //(uint256 price, uint256 decimals) = _getLatestBNBPriceInUSD();
+        //uint256 usdAmountFromValue = weiAmount * price / (10 ** decimals);
+        return (uint256(price), decimals);
     }
 
     receive() external payable {
