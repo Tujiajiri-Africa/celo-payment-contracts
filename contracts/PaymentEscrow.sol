@@ -48,6 +48,13 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         uint256 timestamp
     );
 
+    event Withdraw(
+        address indexed caller,
+        address indexed asset,
+        uint256 indexed amount,
+        uint256 timestamp
+    );
+
     constructor(){
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(FUND_MANAGER_ROLE, msg.sender);
@@ -96,6 +103,19 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
     function getUserCUSDBalance(address _user) external returns(uint256 balance){
         balance = IERC20(cUSD).balanceOf(_user);
+    }
+
+    function withdraw(address _asset) external onlyRole(FUND_MANAGER_ROLE) nonReentrant(){
+        uint256 balance = IERC20(_asset).balanceOf(address(this));
+        if(balance == 0) return INSUFFIENT_ESCROW_BALANCE();
+        IERC20(_asset).safeTransfer(msg.sender, balance);
+
+        emit Withdraw({
+            caller: msg.sender,
+            asset: _asset,
+            amount: balance,
+            timestamp: block.timestamp
+        });
     }
 
     function getcUSDPrice() external view returns(uint256){
