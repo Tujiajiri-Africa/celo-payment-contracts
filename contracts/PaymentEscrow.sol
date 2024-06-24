@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity =0.8.20;
 import { AccessControl } from '@openzeppelin/contracts/access/AccessControl.sol';
 import { ReentrancyGuard } from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -12,21 +12,21 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     bytes32 public constant FUND_MANAGER_ROLE = keccak256('FUND_MANAGER_ROLE');
 
     address private immutable cUSD = 0x765DE816845861e75A25fCA122bb6898B8B1282a;
-    address private immutable cEUR = 0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73;
+    address private immutable cEUR = 0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73; //0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73
     address private immutable cREAL = 0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787;
     address private immutable CELO = 0x471EcE3750Da237f93B8E339c536989b8978a438;
 
     address private immutable cUSD_USD_PRICE_FEED_ADDRESS = 0xe38A27BE4E7d866327e09736F3C570F256FFd048;
-    address private CELO_USD_PRICE_FEED_ADDRESS = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
+    address private immutable CELO_USD_PRICE_FEED_ADDRESS = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
     address private immutable USDT_USD_ALFAJORES_PRICE_FEED_ADDRESS = 0x7bcB65B53D5a7FfD2119449B8CbC370c9058fd52;
 
     AggregatorV3Interface internal celocUSDMainnetPriceFeed;
     AggregatorV3Interface internal alfajoresPriceFeed;
     AggregatorV3Interface internal celoUSDMainnetPriceFeed;
 
-    error INVALID_RECIPIENT;
-    error INVALID_ASSET_AMOUNT;
-    error INSUFFIENT_ESCROW_BALANCE;
+    error INVALID_RECIPIENT();
+    error INVALID_ASSET_AMOUNT();
+    error INSUFFIENT_ESCROW_BALANCE();
 
     event Pay(
         address indexed recipient,
@@ -56,7 +56,7 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     );
 
     event WithdrawNative(
-        address indexed befeciary,
+        address indexed beneficiary,
         uint256 indexed amount,
         uint256 indexed timestamp
     );
@@ -107,13 +107,13 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         balance = IERC20(cUSD).balanceOf(address(this));
     }
 
-    function getUserCUSDBalance(address _user) external returns(uint256 balance){
+    function getUserCUSDBalance(address _user) external view returns(uint256 balance){
         balance = IERC20(cUSD).balanceOf(_user);
     }
 
     function withdraw(address _asset) external onlyRole(FUND_MANAGER_ROLE) nonReentrant(){
         uint256 balance = IERC20(_asset).balanceOf(address(this));
-        if(balance == 0) return INSUFFIENT_ESCROW_BALANCE();
+        if(balance == 0) revert INSUFFIENT_ESCROW_BALANCE();
         IERC20(_asset).safeTransfer(msg.sender, balance);
 
         emit Withdraw({
@@ -125,8 +125,8 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     }
 
     function withdrawEscrowBalance() external onlyRole(FUND_MANAGER_ROLE) nonReentrant(){
-        uint256 balance = address(this.balance);
-        if(balance == 0) return INSUFFIENT_ESCROW_BALANCE();
+        uint256 balance = address(this).balance;
+        if(balance == 0) revert INSUFFIENT_ESCROW_BALANCE();
         
         payable(msg.sender).transfer(balance);
         emit WithdrawNative({
