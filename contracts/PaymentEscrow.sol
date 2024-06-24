@@ -4,6 +4,7 @@ import { AccessControl } from '@openzeppelin/contracts/access/AccessControl.sol'
 import { ReentrancyGuard } from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import { SafeERC20 } from '@openzeppelin/contracts/token/ERC20/util/SafeERC20.sol';
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 contract PaymentEscrow is AccessControl, ReentrancyGuard{
     using SafeERC20 for IERC20;
@@ -14,6 +15,14 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     address private immutable cEUR = 0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73;
     address private immutable cREAL = 0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787;
     address private immutable CELO = 0x471EcE3750Da237f93B8E339c536989b8978a438;
+
+    address private immutable cUSD_USD_PRICE_FEED_ADDRESS = 0xe38A27BE4E7d866327e09736F3C570F256FFd048;
+    address private CELO_USD_PRICE_FEED_ADDRESS = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
+    address private immutable USDT_USD_ALFAJORES_PRICE_FEED_ADDRESS = 0x7bcB65B53D5a7FfD2119449B8CbC370c9058fd52;
+
+    AggregatorV3Interface internal celocUSDMainnetPriceFeed;
+    AggregatorV3Interface internal alfajoresPriceFeed;
+    AggregatorV3Interface internal celoUSDMainnetPriceFeed;
 
     error INVALID_RECIPIENT;
     error INVALID_ASSET_AMOUNT;
@@ -42,6 +51,10 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     constructor(){
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(FUND_MANAGER_ROLE, msg.sender);
+
+        celocUSDMainnetPriceFeed = AggregatorV3Interface(cUSD_USD_PRICE_FEED_ADDRESS);
+        celoUSDMainnetPriceFeed = AggregatorV3Interface(CELO_USD_PRICE_FEED_ADDRESS);
+        alfajoresPriceFeed = AggregatorV3Interface(USDT_USD_ALFAJORES_PRICE_FEED_ADDRESS);
     }
 
     function release(address payable _recipient, uint256 _amount) onlyRole(FUND_MANAGER_ROLE) nonReentrant external{
@@ -83,6 +96,18 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
     function getUserCUSDBalance(address _user) external returns(uint256 balance){
         balance = IERC20(cUSD).balanceOf(_user);
+    }
+
+    function getcUSDPrice() external view returns(uint256){
+       // prettier-ignore
+        (
+            /* uint80 roundID */,
+            int answer,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = celocUSDMainnetPriceFeed.latestRoundData();
+        return answer;
     }
 
     receive() external payable {
