@@ -14,12 +14,12 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
     error INVALID_RECIPIENT;
     error INVALID_ASSET_AMOUNT;
+    error INSUFFIENT_ESCROW_BALANCE;
 
     event Pay(
         address indexed recipient,
         uint256 indexed amount,
         uint256 indexed timestamp
-
     );
 
     event Deposit(
@@ -29,12 +29,19 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
     );
 
+    event OffRamp(
+        address indexed recipient,
+        address indexed asset,
+        uint256 indexed amount,
+        uint256 timestamp
+    );
+
     constructor(){
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(FUND_MANAGER_ROLE, msg.sender);
     }
 
-    function releaseCUSD(address payable _recipient, uint256 _amount) onlyRole(FUND_MANAGER_ROLE) nonReentrant external{
+    function release(address payable _recipient, uint256 _amount) onlyRole(FUND_MANAGER_ROLE) nonReentrant external{
         if(_recipient == address(0)) revert INVALID_RECIPIENT();
         if(_amount == 0) revert INVALID_ASSET_AMOUNT();
 
@@ -43,6 +50,21 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
         emit Pay({
             recipient: _recipient,
+            amount: _amount,
+            timestamp: block.timestamp
+        });
+    }
+
+    function executePayment(address _beneficiary, uint256 _amount) external onlyRole(FUND_MANAGER_ROLE) nonReentrant{
+        uint256 balance = IERC20(cUSD).balanceOf(address(this));
+        if(balance < _amount) revert INSUFFIENT_ESCROW_BALANCE();
+        if(_beneficiary == address(0)) revert INVALID_RECIPIENT();
+
+        IERC20(cUSD).safeTransfer(_beneficiary, _amount);
+
+        emit OffRamp({
+            recipient: _beneficiary,
+            asset: cUSD, 
             amount: _amount,
             timestamp: block.timestamp
         });
