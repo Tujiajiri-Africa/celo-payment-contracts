@@ -34,6 +34,12 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
         (bool sent, bytes memory data) = _recipient.call{value: _amount}(""); //msg.value
         require(sent, "Failed to send Asset");
+
+        emit Pay({
+            recipient: _recipient,
+            amount: _amount,
+            timestamp: block.timestamp
+        });
     }
 
     function deposit() nonReentrant external{
@@ -44,7 +50,6 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         return address(this).balance;
     }
 
-    
     receive() external payable {
         emit Deposit({
             sender: msg.sender,
