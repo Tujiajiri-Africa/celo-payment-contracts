@@ -45,7 +45,13 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
     }
 
     
-    receive() external payable {}
+    receive() external payable {
+        emit Deposit({
+            sender: msg.sender,
+            amount: msg.value,
+            timestamp: block.timestamp
+        });
+    }
 
     fallback() external payable {}
 }
