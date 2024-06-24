@@ -2,9 +2,15 @@
 pragma solidity ^0.8.0;
 import { AccessControl } from '@openzeppelin/contracts/access/AccessControl.sol';
 import { ReentrancyGuard } from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import { SafeERC20 } from '@openzeppelin/contracts/token/ERC20/util/SafeERC20.sol';
 
 contract PaymentEscrow is AccessControl, ReentrancyGuard{
+    using SafeERC20 for IERC20;
+
     bytes32 public constant FUND_MANAGER_ROLE = keccak256('FUND_MANAGER_ROLE');
+
+    address private immutable cUSD = 0x765DE816845861e75A25fCA122bb6898B8B1282a;
 
     error INVALID_RECIPIENT;
     error INVALID_ASSET_AMOUNT;
@@ -46,8 +52,9 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
 
     }
 
-    function getEscrowBalance() nonReentrant external{
-        return address(this).balance;
+    function getEscrowCUSDBalance() nonReentrant external{
+        uint256 _balance = IERC20(cUSD).balanceOf(address(this));
+        return _balance;
     }
 
     receive() external payable {
