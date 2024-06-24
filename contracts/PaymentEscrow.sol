@@ -55,6 +55,12 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         uint256 timestamp
     );
 
+    event WithdrawNative(
+        address indexed befeciary,
+        uint256 indexed amount,
+        uint256 timestamp
+    );
+
     constructor(){
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(FUND_MANAGER_ROLE, msg.sender);
@@ -113,6 +119,16 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         emit Withdraw({
             caller: msg.sender,
             asset: _asset,
+            amount: balance,
+            timestamp: block.timestamp
+        });
+    }
+
+    function withdrawEscrowBalance() external onlyRole(FUND_MANAGER_ROLE) nonReentrant(){
+        uint256 balance = address(this.balance);
+        payable(msg.sender).transfer(balance);
+        emit WithdrawNative({
+            beneficiary: msg.sender,
             amount: balance,
             timestamp: block.timestamp
         });
