@@ -136,7 +136,7 @@ contract PaymentEscrow is AccessControl, ReentrancyGuard{
         });
     }
 
-    function _getLatestBNBPriceInUSD() private view returns(uint256, uint256){
+    function _getLatestcUSDPriceInUSD() private view returns(uint256, uint256){
         (, int256 price, , , ) = celocUSDMainnetPriceFeed.latestRoundData();
         uint256 decimals = celocUSDMainnetPriceFeed.decimals();
         //(uint256 price, uint256 decimals) = _getLatestBNBPriceInUSD();
